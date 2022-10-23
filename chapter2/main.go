@@ -1,19 +1,28 @@
+package main
+
+import (
+	. "chapter2/types"
+	"encoding/json"
+	"fmt"
+	"log"
+	"time"
+)
 
 func main() {
 	comment1 := Comment{
-		CommentID: 1,
-		ArticleID: 1,
+		CommentId: 1,
+		ArticleId: 1,
 		Message:   "test comment1",
 		CreatedAt: time.Now(),
 	}
 	comment2 := Comment{
-		CommentID: 2,
-		ArticleID: 1,
+		CommentId: 2,
+		ArticleId: 1,
 		Message:   "second comment",
 		CreatedAt: time.Now(),
 	}
 	article := Article{
-		ID:          1,
+		Id:          1,
 		Title:       "first article",
 		Contents:    "This is the test article.",
 		UserName:    "saki",
@@ -22,5 +31,11 @@ func main() {
 		CreatedAt:   time.Now(),
 	}
 
-	fmt.Printf("%+v\n", article)
+	data, err := json.Marshal(article)
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	fmt.Printf("%s\n", data)
 }
