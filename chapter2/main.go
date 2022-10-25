@@ -1,41 +1,25 @@
 package main
 
 import (
-	. "chapter2/types"
-	"encoding/json"
-	"fmt"
+	"go-api/handlers"
 	"log"
-	"time"
+	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	comment1 := Comment{
-		CommentId: 1,
-		ArticleId: 1,
-		Message:   "test comment1",
-		CreatedAt: time.Now(),
-	}
-	comment2 := Comment{
-		CommentId: 2,
-		ArticleId: 1,
-		Message:   "second comment",
-		CreatedAt: time.Now(),
-	}
-	article := Article{
-		Id:          1,
-		Title:       "first article",
-		Contents:    "This is the test article.",
-		UserName:    "saki",
-		NiceNum:     1,
-		CommentList: []Comment{comment1, comment2},
-		CreatedAt:   time.Now(),
-	}
+	router := mux.NewRouter()
+	router.HandleFunc("/hello", handlers.HelloHandler).Methods(http.MethodGet)
 
-	data, err := json.Marshal(article)
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
+	articles := router.PathPrefix("/article").Subrouter()
+	articles.HandleFunc("", handlers.PostArticleHandler).Methods(http.MethodPost)
+	articles.HandleFunc("/list", handlers.ListArticleHandler).Methods(http.MethodGet)
+	articles.HandleFunc("/{id:[0-9]+}", handlers.FindArticleHandler).Methods(http.MethodGet)
+	articles.HandleFunc("/nice", handlers.PostNiceArticleHandler).Methods(http.MethodPost)
 
-	fmt.Printf("%s\n", data)
+	router.HandleFunc("/comment", handlers.PostCommnetHandler).Methods(http.MethodPost)
+
+	log.Println("server start at port 8080")
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
