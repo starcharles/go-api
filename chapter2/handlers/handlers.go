@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go-api/models"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -17,7 +19,27 @@ func HelloHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func PostArticleHandler(w http.ResponseWriter, req *http.Request) {
-	article := models.Article1
+	length, err := strconv.Atoi(req.Header.Get("Content-Length"))
+	if err != nil {
+		http.Error(w, "failed to get Cotent-Length", http.StatusBadRequest)
+		return
+	}
+	body := make([]byte, length)
+	if _, err := req.Body.Read(body); !errors.Is(err, io.EOF) {
+		log.Fatalln(err)
+		http.Error(w, "failed to get request Body", http.StatusBadRequest)
+		return
+	}
+	defer req.Body.Close()
+
+	fmt.Println(body)
+	var reqArticle models.Article
+	if err := json.Unmarshal(body, &reqArticle); err != nil {
+		http.Error(w, "failed to decode json\n", http.StatusBadRequest)
+		return
+	}
+
+	article := reqArticle
 	json, err := json.Marshal(article)
 	if err != nil {
 		http.Error(w, "failed to encode to json", http.StatusInternalServerError)
